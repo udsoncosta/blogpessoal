@@ -3536,11 +3536,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\blogpessoal.csproj",
+      "projectUniqueName": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\blogpessoal\\blogpessoal.csproj",
       "projectName": "blogpessoal",
-      "projectPath": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\blogpessoal.csproj",
+      "projectPath": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\blogpessoal\\blogpessoal.csproj",
       "packagesPath": "C:\\Users\\udson\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\obj\\",
+      "outputPath": "C:\\Users\\udson\\OneDrive\\Área de Trabalho\\aspnet\\blogpessoal\\blogpessoal\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\udson\\AppData\\Roaming\\NuGet\\NuGet.Config",
