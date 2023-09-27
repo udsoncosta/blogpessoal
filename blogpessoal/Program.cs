@@ -17,50 +17,56 @@ namespace blogpessoal
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                }
+                
+                );
 
-            // conexão com o banco de dados
+            // Conexão com o Banco de dados
 
             var connectionString = builder.Configuration
                 .GetConnectionString("DefaultConnection");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(connectionString)
+                options.UseSqlServer(connectionString)
             );
 
-            //Registrar a validação das entidades
-
+            // Registrar a Validação das Entidades
             builder.Services.AddTransient<IValidator<Postagem>, PostagemValidator>();
+            builder.Services.AddTransient<IValidator<Tema>, TemaValidator>();
 
-            //Registrar as classes de serviço (service)
+            // Registrar as Classes de Serviço (Service)
             builder.Services.AddScoped<IPostagemService, PostagemService>();
+            builder.Services.AddScoped<ITemaService, TemaService>();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Configuração do CORS 
+            // Configuração do CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: "MyPolicy",
-                   policy =>
-                   {
-                       policy.AllowAnyOrigin()
-                             .AllowAnyMethod()
-                             .AllowAnyHeader();
-                   });
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                                .AllowAnyMethod()
+                                .AllowAnyHeader();
+                    });
             });
 
             var app = builder.Build();
 
-            //criar o banco de dados e as tabelas
+            // Criar o Banco de dados e as Tabelas
 
-            using(var scope = app.Services.CreateAsyncScope())
+            using (var scope = app.Services.CreateAsyncScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 dbContext.Database.EnsureCreated();
             }
-
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -69,8 +75,9 @@ namespace blogpessoal
                 app.UseSwaggerUI();
             }
 
-            //Inicializa o cors
+            // Inicializa o CORS
             app.UseCors("MyPolicy");
+
             app.UseAuthorization();
 
 

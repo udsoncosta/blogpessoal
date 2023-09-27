@@ -10,11 +10,19 @@ namespace blogpessoal.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Postagem>().ToTable("tb_postagens");
+            modelBuilder.Entity<Tema>().ToTable("tb_temas");
+
+            _ = modelBuilder.Entity<Postagem>()
+                .HasOne(_ => _.Tema)
+                .WithMany(t => t.Postagem)
+                .HasForeignKey("TemaId")
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
-        //Registrar DbSet - Objeto responsavel por manipular a Tabela
+        // Registrar DbSet - Objeto responsável por manipular a Tabela
 
         public DbSet<Postagem> Postagens { get; set; } = null!;
+        public DbSet<Tema> Temas { get; set; } = null!;
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -27,7 +35,7 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo criada. 
                 if (insertedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = DateTimeOffset.UtcNow;
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
                 }
             }
 
@@ -40,11 +48,12 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo atualizada.  
                 if (modifiedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = DateTimeOffset.UtcNow;
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
                 }
             }
 
             return base.SaveChangesAsync(cancellationToken);
         }
+
     }
 }
