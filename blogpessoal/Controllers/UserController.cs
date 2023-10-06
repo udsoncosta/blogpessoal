@@ -62,7 +62,7 @@ namespace blogpessoal.Controllers
             var Resposta = await _userService.Create(user);
 
             if (Resposta is null)
-                return BadRequest("Usuário já está cadstrado!");
+                return BadRequest("Usuário já cadastrado!");
 
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
 
@@ -73,7 +73,7 @@ namespace blogpessoal.Controllers
         public async Task<ActionResult> Update([FromBody] User user)
         {
             if (user.Id == 0)
-                return BadRequest("Id do User é inválido!");
+                return BadRequest("ID do user é inválido!");
 
             var validarUser = await _userValidator.ValidateAsync(user);
 
@@ -86,12 +86,12 @@ namespace blogpessoal.Controllers
 
             if (UserUpdate is not null && UserUpdate.Id != user.Id)
 
-                return BadRequest("O usuário (e-mail) já está em uso por outro usuário");
+                return BadRequest("O e-mail já está em uso por outro usuário!");
 
             var Resposta = await _userService.Update(user);
 
             if (Resposta is null)
-                return NotFound("User não Encontrado!");
+                return NotFound("User não encontrado!");
 
             return Ok(Resposta);
 
@@ -107,8 +107,7 @@ namespace blogpessoal.Controllers
                 return Unauthorized("Usuário e /ou senha são inválidos");
 
             return Ok(Resposta);
-        }
-       
 
-        }
+        }    
+      }
     }
