@@ -11,7 +11,6 @@ using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.ComponentModel.DataAnnotations;
@@ -25,54 +24,68 @@ namespace blogpessoal
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add services to the container.
+
             builder.Services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                });
 
-                    options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-                }                
-                );
+
+            // Conexão com o Banco de dados
 
             if (builder.Configuration["Enviroment:Start"] == "PROD")
             {
+                /* Conexão Remota (Nuvem) - PostgreSQL */
+
                 builder.Configuration
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("secrets.json");
+                .SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("secrets.json");
 
                 var connectionString = builder.Configuration
-                .GetConnectionString("ProdConnection");
+                    .GetConnectionString("ProdConnection");
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
                     options.UseNpgsql(connectionString)
                 );
+
             }
             else
             {
-                var connectionString = builder.Configuration
-                .GetConnectionString("DefaultConnection");
+                /* Conexão Local - SQL Server */
+
+                var connectionString = builder.Configuration.
+                    GetConnectionString("DefaultConnection");
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
                     options.UseSqlServer(connectionString)
                 );
             }
 
+            //Registrar Validação das Entidades
+
             builder.Services.AddTransient<IValidator<Postagem>, PostagemValidator>();
+
             builder.Services.AddTransient<IValidator<Tema>, TemaValidator>();
+
             builder.Services.AddTransient<IValidator<User>, UserValidator>();
 
+
+            //Registrar as Classes de serviço(Service)
             builder.Services.AddScoped<IPostagemService, PostagemService>();
+
             builder.Services.AddScoped<ITemaService, TemaService>();
+
             builder.Services.AddScoped<IUserService, UserService>();
+
             builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer( options =>
-
+            }).AddJwtBearer(options =>
             {
                 var key = Encoding.UTF8.GetBytes(Settings.Secret);
                 options.SaveToken = true;
@@ -83,67 +96,71 @@ namespace blogpessoal
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key)
+
                 };
-                });
+            });
 
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-
+            //Registrar o Swagger
             builder.Services.AddSwaggerGen(options =>
             {
-                //Informações do projeto e da pessoa desenvolvedora
+
+                //Personalizar a Página inicial do Swagger
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Projeto Blog Pessoal",
-                    Description = "Projeto Blog Pessoal - ASP.NET Core 7.0",
+                    Description = "Projeto Blog Pessoal - ASP.NET Core 7 - Entity Framework",
                     Contact = new OpenApiContact
                     {
-                        Name = "Udson Costa",
-                        Email = "udsoncostasantana@gmail.com",
-                        Url = new Uri("https://github.com/udsoncosta")
+                        Name = "Gaspar Leonardi",
+                        Email = "gasparlleonardi@gmail.com",
+                        Url = new Uri("https://github.com/GasparLeonardi")
                     },
                     License = new OpenApiLicense
                     {
                         Name = "Github",
-                        Url = new Uri("https://github.com/udsoncosta")
+                        Url = new Uri("https://github.com/GasparLeonardi")
                     }
-
                 });
 
-                //Configuração de segurança no swagger
+                //Adicionar a Segurança no Swagger
                 options.AddSecurityDefinition("JWT", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
-                    Description = "Digite um Token JWT válido",
+                    Description = "Digite um Token JWT válido!",
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = "Bearer"
-
                 });
 
-                //Adicionando a indivação de endpoint protegido
+                //Adicionar a configuração visual da Segurança no Swagger
                 options.OperationFilter<AuthResponsesOperationFilter>();
 
             });
 
-            // Adicionando o Fluent Validation no Swagger
+            // Adicionar o Fluent Validation no Swagger
             builder.Services.AddFluentValidationRulesToSwagger();
 
-            //Configuração do CORS
+            // Configuração do CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: "MyPolicy",
                     policy =>
                     {
                         policy.AllowAnyOrigin()
-                                .AllowAnyMethod()
-                                .AllowAnyHeader();
-                    });
-            });
+                              .AllowAnyMethod()
+                              .AllowAnyHeader();
 
+                    });
+            }
+
+            );
             var app = builder.Build();
 
+            // Criar o banco de dados e as tabelas
 
             using (var scope = app.Services.CreateAsyncScope())
             {
@@ -151,18 +168,22 @@ namespace blogpessoal
                 dbContext.Database.EnsureCreated();
             }
 
-            
-                app.UseSwagger();
+            // Configure the HTTP request pipeline.
+            //if (app.Environment.IsDevelopment())
+            //{
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
-            //Swagger como página inicial na nuvem
+            // Swagger como Página Inicial (Home) na Nuvem
             if (app.Environment.IsProduction())
             {
                 app.UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - v1");
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - V1");
                     options.RoutePrefix = string.Empty;
                 });
-            }           
+            }
+            //}
 
             //Inicializa o CORS
             app.UseCors("MyPolicy");
@@ -170,6 +191,7 @@ namespace blogpessoal
             app.UseAuthentication();
 
             app.UseAuthorization();
+
 
             app.MapControllers();
 
