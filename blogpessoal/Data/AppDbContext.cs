@@ -26,7 +26,7 @@ namespace blogpessoal.Data
                 .OnDelete(DeleteBehavior.Cascade);
         }
 
-        // Registrar DbSet - Objeto responsável por manipular a Tabela
+        // Registrar DbSet -> Objeto responsável por manipular a Tabela
 
         public DbSet<Postagem> Postagens { get; set; } = null!;
         public DbSet<Tema> Temas { get; set; } = null!;
@@ -43,7 +43,7 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo criada. 
                 if (insertedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now);
                 }
             }
 
@@ -56,7 +56,7 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo atualizada.  
                 if (modifiedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now);
                 }
             }
 
