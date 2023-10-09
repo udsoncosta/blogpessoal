@@ -111,17 +111,17 @@ namespace blogpessoal
                 {
                     Version = "v1",
                     Title = "Projeto Blog Pessoal",
-                    Description = "Projeto Blog Pessoal - ASP.NET Core 7 - Entity Framework",
+                    Description = "Projeto Blog Pessoal - ASP.NET Core 7",
                     Contact = new OpenApiContact
                     {
-                        Name = "Gaspar Leonardi",
-                        Email = "gasparlleonardi@gmail.com",
-                        Url = new Uri("https://github.com/GasparLeonardi")
+                        Name = "Udson Costa",
+                        Email = "udsoncosta@gmail.com",
+                        Url = new Uri("https://github.com/udsoncosta")
                     },
                     License = new OpenApiLicense
                     {
                         Name = "Github",
-                        Url = new Uri("https://github.com/GasparLeonardi")
+                        Url = new Uri("https://github.com/udsoncosta")
                     }
                 });
 
@@ -179,7 +179,7 @@ namespace blogpessoal
             {
                 app.UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - V1");
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - v1");
                     options.RoutePrefix = string.Empty;
                 });
             }
