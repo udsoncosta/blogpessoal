@@ -16,7 +16,6 @@ namespace blogpessoal.Validator
                 .NotEmpty()
                 .MinimumLength(10)
                 .MaximumLength(1000);
-
         }
     }
 }

@@ -19,7 +19,8 @@ namespace blogpessoal.Validator
 
             RuleFor(u => u.Senha)
            .NotEmpty()
-           .MinimumLength(8);
+           .MinimumLength(8)
+           .MaximumLength(255);
 
             RuleFor(u => u.Foto)
            .MaximumLength(5000);

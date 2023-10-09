@@ -1,33 +1,41 @@
 ﻿using blogpessoal.Model;
+using blogpessoal.Validator;
 using Microsoft.EntityFrameworkCore;
 
 namespace blogpessoal.Data
 {
+
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+
+            this.ChangeTracker.LazyLoadingEnabled = false;
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //MODEL GERA AS TABELAS
             modelBuilder.Entity<Postagem>().ToTable("tb_postagens");
             modelBuilder.Entity<Tema>().ToTable("tb_temas");
             modelBuilder.Entity<User>().ToTable("tb_usuarios");
 
             _ = modelBuilder.Entity<Postagem>()
-                .HasOne(_ => _.Tema)
-                .WithMany(t => t.Postagem)
-                .HasForeignKey("TemaId")
+
+                .HasOne(_ => _.Tema)                  //indica lado um da relação
+                .WithMany(t => t.Postagem)           //indica lado muitos da relação
+                .HasForeignKey("TemaId")            //indica foringkey
                 .OnDelete(DeleteBehavior.Cascade);
 
             _ = modelBuilder.Entity<Postagem>()
-                .HasOne(_ => _.Usuario)
-                .WithMany(t => t.Postagem)
-                .HasForeignKey("UsuarioId")
-                .OnDelete(DeleteBehavior.Cascade);
+               .HasOne(_ => _.Usuario)                  //indica lado um da relação
+               .WithMany(t => t.Postagem)           //indica lado muitos da relação
+               .HasForeignKey("UsuarioId")            //indica foringkey
+               .OnDelete(DeleteBehavior.Cascade);
         }
 
-        // Registrar DbSet -> Objeto responsável por manipular a Tabela
-
+        //Registar DbSet - Objeto responsável por manipular a Tabela Postagem e Temas
+        //Seu eu não criar o DbSet eu não consigo fazer CRUD
         public DbSet<Postagem> Postagens { get; set; } = null!;
         public DbSet<Tema> Temas { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
@@ -38,11 +46,13 @@ namespace blogpessoal.Data
                                    .Where(x => x.State == EntityState.Added)
                                    .Select(x => x.Entity);
 
+            //insertedEntry: vê se é uma inserção
             foreach (var insertedEntry in insertedEntries)
             {
-                //Se uma propriedade da Classe Auditable estiver sendo criada. 
+                //Se uma propriedade da Classe Auditable estiver sendo criada vai ter metodo responssável por persistir a informação
                 if (insertedEntry is Auditable auditableEntity)
                 {
+                    //new TimeSpan(-3,0,0): criamos um novo datime e arrumamos o utc que é -3 horas do de greenwich (com exeção de de alguns estados do Brasil)
                     auditableEntity.Data = new DateTimeOffset(DateTime.Now);
                 }
             }
@@ -56,12 +66,11 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo atualizada.  
                 if (modifiedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = new DateTimeOffset(DateTime.Now);
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now); ;
                 }
             }
 
             return base.SaveChangesAsync(cancellationToken);
         }
-
     }
 }

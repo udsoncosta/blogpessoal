@@ -1,6 +1,8 @@
 ﻿using blogpessoal.Model;
 using blogpessoal.Security;
 using blogpessoal.Service;
+using blogpessoal.Service.Implements;
+using blogpessoal.Validator;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,22 +13,17 @@ namespace blogpessoal.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-
         private readonly IUserService _userService;
         private readonly IValidator<User> _userValidator;
         private readonly IAuthService _authService;
 
-
-        public UserController(
-            IUserService userService,
-            IValidator<User> userValidator,
-            IAuthService authService
-            )
+        public UserController(IUserService userService, IValidator<User> userValidator, IAuthService authService)
         {
             _userService = userService;
             _userValidator = userValidator;
             _authService = authService;
         }
+
 
         [Authorize]
         [HttpGet("all")]
@@ -34,24 +31,26 @@ namespace blogpessoal.Controllers
         {
             return Ok(await _userService.GetAll());
         }
+
+
         [Authorize]
+        //"{id}": é uma variável 
         [HttpGet("{id}")]
         public async Task<ActionResult> GetById(long id)
         {
             var Resposta = await _userService.GetById(id);
 
             if (Resposta is null)
+            {
                 return NotFound();
-
+            }
             return Ok(Resposta);
         }
-
 
         [AllowAnonymous]
         [HttpPost("cadastrar")]
         public async Task<ActionResult> Create([FromBody] User user)
         {
-
             var validarUser = await _userValidator.ValidateAsync(user);
 
             if (!validarUser.IsValid)
@@ -62,10 +61,11 @@ namespace blogpessoal.Controllers
             var Resposta = await _userService.Create(user);
 
             if (Resposta is null)
-                return BadRequest("Usuário já cadastrado!");
+            {
+                return BadRequest("Usuario já está Cadastrado!");
+            }
 
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
-
         }
 
         [Authorize]
@@ -73,28 +73,31 @@ namespace blogpessoal.Controllers
         public async Task<ActionResult> Update([FromBody] User user)
         {
             if (user.Id == 0)
-                return BadRequest("ID do user é inválido!");
-
-            var validarUser = await _userValidator.ValidateAsync(user);
-
-            if (!validarUser.IsValid)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, validarUser);
+                return BadRequest("Id do User é inválido!");
+            }
+
+            var validarTema = await _userValidator.ValidateAsync(user);
+
+            if (!validarTema.IsValid)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, validarTema);
             }
 
             var UserUpdate = await _userService.GetByUsuario(user.Usuario);
 
             if (UserUpdate is not null && UserUpdate.Id != user.Id)
-
-                return BadRequest("O e-mail já está em uso por outro usuário!");
+            {
+                return BadRequest("O Usuário (e-mail) já está em uso por outro usuário");
+            }
 
             var Resposta = await _userService.Update(user);
 
             if (Resposta is null)
-                return NotFound("User não encontrado!");
-
+            {
+                return NotFound("User não Encontrado!");
+            }
             return Ok(Resposta);
-
         }
 
         [AllowAnonymous]
@@ -104,10 +107,11 @@ namespace blogpessoal.Controllers
             var Resposta = await _authService.Autenticar(userLogin);
 
             if (Resposta is null)
-                return Unauthorized("Usuário e /ou senha são inválidos");
+            {
+                return Unauthorized("Usuário e/ou Senha são inválidos!");
+            }
 
             return Ok(Resposta);
-
-        }    
-      }
+        }
     }
+}

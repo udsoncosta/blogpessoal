@@ -6,7 +6,6 @@ namespace blogpessoal.Service.Implements
 {
     public class TemaService : ITemaService
     {
-
         private readonly AppDbContext _context;
 
         public TemaService(AppDbContext context)
@@ -16,6 +15,7 @@ namespace blogpessoal.Service.Implements
 
         public async Task<IEnumerable<Tema>> GetAll()
         {
+
             return await _context.Temas
                 .Include(t => t.Postagem)
                 .ToListAsync();
@@ -25,34 +25,34 @@ namespace blogpessoal.Service.Implements
         {
             try
             {
-
-                var Tema = await _context.Temas
+                var TemaUpdate = await _context.Temas
                     .Include(t => t.Postagem)
-                    .FirstAsync(i => i.Id == id);
+                    .FirstAsync(t => t.Id == id);
 
-                return Tema;
-
+                return TemaUpdate;
             }
             catch
             {
                 return null;
             }
-
         }
 
         public async Task<IEnumerable<Tema>> GetByDescricao(string descricao)
         {
             var Tema = await _context.Temas
-                            .Include(t => t.Postagem)
-                            .Where(t => t.Descricao.Contains(descricao))
-                            .ToListAsync();
-
+                          .Include(t => t.Postagem)
+                          .Where(d => d.Descricao.Contains(descricao))
+                          .ToListAsync();
             return Tema;
         }
 
+        //await é uma palavra reservada do asp.net, que trasforma algo assincrono em síncrono(executar na ordem de execução)
+        //async é o assincrono
         public async Task<Tema?> Create(Tema tema)
         {
+            //adiciona na fila
             await _context.Temas.AddAsync(tema);
+            //persiste na fila
             await _context.SaveChangesAsync();
 
             return tema;
@@ -63,22 +63,21 @@ namespace blogpessoal.Service.Implements
             var TemaUpdate = await _context.Temas.FindAsync(tema.Id);
 
             if (TemaUpdate is null)
+            {
                 return null;
+            }
 
             _context.Entry(TemaUpdate).State = EntityState.Detached;
             _context.Entry(tema).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return tema;
-
         }
 
         public async Task Delete(Tema tema)
         {
             _context.Remove(tema);
             await _context.SaveChangesAsync();
-
         }
-
     }
 }
