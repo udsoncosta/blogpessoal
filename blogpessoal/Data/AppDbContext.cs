@@ -1,9 +1,9 @@
-﻿using blogpessoal.Configuration;
-using blogpessoal.Model;
+﻿using blogpessoal.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace blogpessoal.Data
 {
+
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -14,22 +14,20 @@ namespace blogpessoal.Data
             modelBuilder.Entity<Tema>().ToTable("tb_temas");
             modelBuilder.Entity<User>().ToTable("tb_usuarios");
 
-            modelBuilder.Entity<Postagem>()
-                .HasOne(p => p.Tema)
+            _ = modelBuilder.Entity<Postagem>()
+                .HasOne(_ => _.Tema)
                 .WithMany(t => t.Postagem)
                 .HasForeignKey("TemaId")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Postagem>()
-               .HasOne(p => p.Usuario)
-               .WithMany(u => u.Postagem)
-               .HasForeignKey("UsuarioId")
-               .OnDelete(DeleteBehavior.Cascade);
-
+            _ = modelBuilder.Entity<Postagem>()
+                .HasOne(_ => _.Usuario)
+                .WithMany(u => u.Postagem)
+                .HasForeignKey("UsuarioId")
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
-        // Registrar DbSet - Objeto responsável por manipular a Tabela
-
+        // Registar um DbSet - Objeto responsável por manipular a tabela
         public DbSet<Postagem> Postagens { get; set; } = null!;
         public DbSet<Tema> Temas { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
@@ -45,7 +43,7 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo criada. 
                 if (insertedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = DateTimeOffset.Now;
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
                 }
             }
 
@@ -58,20 +56,11 @@ namespace blogpessoal.Data
                 //Se uma propriedade da Classe Auditable estiver sendo atualizada.  
                 if (modifiedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = DateTimeOffset.Now;
+                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
                 }
             }
 
             return base.SaveChangesAsync(cancellationToken);
         }
-
-        // Ajusta a Data para o formato UTC - Compatível com qualquer Banco de dados Relacional
-        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-        {
-            configurationBuilder
-                .Properties<DateTimeOffset>()
-                .HaveConversion<DateTimeOffsetConverter>();
-        }
-
     }
 }
