@@ -1,5 +1,7 @@
 ﻿using blogpessoal.Model;
 using Microsoft.EntityFrameworkCore;
+using blogpessoal.Validator;
+using blogpessoal.Configuration;
 
 namespace blogpessoal.Data
 {

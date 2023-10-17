@@ -168,3 +168,6 @@ C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Deb
 C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\Npgsql.dll
 C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\System.Net.Http.Formatting.dll
+C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\System.Web.Http.dll
+C:\Users\udson\OneDrive\Área de Trabalho\aspnet\blogpessoal\blogpessoal\bin\Debug\net7.0\Swashbuckle.Core.dll
