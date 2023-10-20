@@ -1,7 +1,7 @@
-﻿using blogpessoal.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using blogpessoal.Configuration;
+using blogpessoal.Model;
 using blogpessoal.Validator;
-using blogpessoal.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace blogpessoal.Data
 {
@@ -12,24 +12,26 @@ namespace blogpessoal.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //Model gerando as tabelas
             modelBuilder.Entity<Postagem>().ToTable("tb_postagens");
             modelBuilder.Entity<Tema>().ToTable("tb_temas");
             modelBuilder.Entity<User>().ToTable("tb_usuarios");
 
             _ = modelBuilder.Entity<Postagem>()
-                .HasOne(_ => _.Tema)
-                .WithMany(t => t.Postagem)
-                .HasForeignKey("TemaId")
+
+                .HasOne(_ => _.Tema)                  //indica lado um da relação
+                .WithMany(t => t.Postagem)           //indica lado muitos da relação
+                .HasForeignKey("TemaId")            //indica foringkey
                 .OnDelete(DeleteBehavior.Cascade);
 
             _ = modelBuilder.Entity<Postagem>()
-                .HasOne(_ => _.Usuario)
-                .WithMany(u => u.Postagem)
-                .HasForeignKey("UsuarioId")
-                .OnDelete(DeleteBehavior.Cascade);
+               .HasOne(_ => _.Usuario)                  
+               .WithMany(t => t.Postagem)           
+               .HasForeignKey("UsuarioId")            
+               .OnDelete(DeleteBehavior.Cascade);
         }
 
-        // Registar um DbSet - Objeto responsável por manipular a tabela
+        //Registar DbSet
         public DbSet<Postagem> Postagens { get; set; } = null!;
         public DbSet<Tema> Temas { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
@@ -40,12 +42,13 @@ namespace blogpessoal.Data
                                    .Where(x => x.State == EntityState.Added)
                                    .Select(x => x.Entity);
 
+            
             foreach (var insertedEntry in insertedEntries)
             {
-                //Se uma propriedade da Classe Auditable estiver sendo criada. 
+                
                 if (insertedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
+                    auditableEntity.Data = DateTimeOffset.Now;
                 }
             }
 
@@ -55,14 +58,22 @@ namespace blogpessoal.Data
 
             foreach (var modifiedEntry in modifiedEntries)
             {
-                //Se uma propriedade da Classe Auditable estiver sendo atualizada.  
                 if (modifiedEntry is Auditable auditableEntity)
                 {
-                    auditableEntity.Data = new DateTimeOffset(DateTime.Now, new TimeSpan(-3, 0, 0));
+                    auditableEntity.Data = DateTimeOffset.Now;
                 }
             }
 
             return base.SaveChangesAsync(cancellationToken);
+
+        }
+
+        // Ajusta a Data para o formato UTC
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder
+                .Properties<DateTimeOffset>()
+                .HaveConversion<DateTimeOffsetConverter>();
         }
     }
 }

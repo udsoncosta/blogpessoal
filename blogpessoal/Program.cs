@@ -160,9 +160,6 @@ namespace blogpessoal
                 dbContext.Database.EnsureCreated();
             }
 
-
-            app.UseDeveloperExceptionPage();
-
             // Habilitar Swagger
             app.UseSwagger();
             app.UseSwaggerUI();

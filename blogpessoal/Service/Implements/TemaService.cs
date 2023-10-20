@@ -41,18 +41,19 @@ namespace blogpessoal.Service.Implements
         {
             var Tema = await _context.Temas
                           .Include(t => t.Postagem)
-                          .Where(d => d.Descricao.Contains(descricao))
+                          .Where(T => T.Descricao.ToUpper()
+                                .Contains(descricao.ToUpper()))
                           .ToListAsync();
             return Tema;
         }
 
-        //await é uma palavra reservada do asp.net, que trasforma algo assincrono em síncrono(executar na ordem de execução)
-        //async é o assincrono
+        //await = trasforma de assincrono para síncrono
+        //async = assincrono
         public async Task<Tema?> Create(Tema tema)
         {
-            //adiciona na fila
+            //Adiciona na fila
             await _context.Temas.AddAsync(tema);
-            //persiste na fila
+            //Persiste na fila
             await _context.SaveChangesAsync();
 
             return tema;
