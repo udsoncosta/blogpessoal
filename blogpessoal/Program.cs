@@ -1,4 +1,3 @@
-
 using blogpessoal.Configuration;
 using blogpessoal.Data;
 using blogpessoal.Model;
@@ -11,7 +10,6 @@ using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -26,57 +24,48 @@ namespace blogpessoal
 
             // Add services to the container.
 
-            //quando for fazer a descerialização do objeto não fazer um loop infinito
             builder.Services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
-                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
 
             // Conexão com o Banco de dados
-            if (builder.Configuration["Enviroment:Start"] == "PROD")
+            if (builder.Configuration["Environment:Start"] == "PROD")
             {
-                
-
                 builder.Configuration
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("secrets.json");
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("secrets.json");
 
                 var connectionString = builder.Configuration
-                    .GetConnectionString("ProdConnection");
+                .GetConnectionString("ProdConnection");
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(connectionString)
-                );
-
+                    options.UseNpgsql(connectionString));
             }
             else
             {
-
-                var connectionString = builder.Configuration.
-                    GetConnectionString("DefaultConnection");
+                var connectionString = builder.Configuration
+                    .GetConnectionString("DefaultConnection");
 
                 builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseSqlServer(connectionString)
-                );
+                    options.UseSqlServer(connectionString));
             }
 
-            //Registrar a Validações das Entidades
-            //AddTransient: só vai instanciar quando vc precisar, para cadastrar e atualizar
+            // Registrar a Validação das Entidades
             builder.Services.AddTransient<IValidator<Postagem>, PostagemValidator>();
             builder.Services.AddTransient<IValidator<Tema>, TemaValidator>();
             builder.Services.AddTransient<IValidator<User>, UserValidator>();
 
-
-            //Registrar as Classes de Serviço (Service)
-            //AddScoped: 
+            // Registrar as Classes de Serviço (Service)
             builder.Services.AddScoped<IPostagemService, PostagemService>();
             builder.Services.AddScoped<ITemaService, TemaService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
-            //validação do Token
+
+            // Validação do Token
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -101,12 +90,13 @@ namespace blogpessoal
             //Registrar o Swagger
             builder.Services.AddSwaggerGen(options =>
             {
+
                 //Personalizar a Págna inicial do Swagger
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Projeto Blog Pessoal",
-                    Description = "Projeto Blog Pessoal - ASP.NET Core 7 - Entity Framework",
+                    Description = "Projeto Blog Pessoal - ASP.NET Core 7",
                     Contact = new OpenApiContact
                     {
                         Name = "Udson Costa",
@@ -115,7 +105,7 @@ namespace blogpessoal
                     },
                     License = new OpenApiLicense
                     {
-                        Name = "Github",
+                        Name = "GitHub",
                         Url = new Uri("https://github.com/udsoncosta")
                     }
                 });
@@ -124,57 +114,63 @@ namespace blogpessoal
                 options.AddSecurityDefinition("JWT", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
-                    Description = "Digite um Token JWT válido!",
+                    Description = "Digite um token JWT válido!",
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = "Bearer"
                 });
 
-                //Adicionar a configuração visual da Segurança no Swagger (cadiadinhos)
+                //Adicionar a configuração visual da Segurança no Swagger
                 options.OperationFilter<AuthResponsesOperationFilter>();
 
             });
-            //habilitando as validações dos dados também no swagger
+
             // Adicionar o Fluent Validation no Swagger
             builder.Services.AddFluentValidationRulesToSwagger();
 
-            //Configuração do CORS
+            // Configuração do CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: "MyPolicy",
                     policy =>
                     {
-                        policy.AllowAnyOrigin()    //para receber as requisições. Se tivessemos um frontend pronto travaríamos colocando o front entre ()
-                        .AllowAnyMethod()          //para recer os delete, get, post
-                        .AllowAnyHeader();         //para receber o token
+                        policy.AllowAnyOrigin()
+                                .AllowAnyMethod()
+                                .AllowAnyHeader();
                     });
             });
 
             var app = builder.Build();
 
-            //Criar o Banco de Dados e as Tabelas
-            using (var scope = app.Services.CreateAsyncScope()) //CreateAsyncScope cria o banco de dados e tabelas ele consulta a classe de contexto identifica todas as tabelas que tem que criar e cria o banco e tabelas
+            // Criar o Banco de dados e as Tabelas
+
+            using (var scope = app.Services.CreateAsyncScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 dbContext.Database.EnsureCreated();
             }
 
-            // Habilitar Swagger
+            app.UseDeveloperExceptionPage();
+
+            // Habilitar o Swagger
+
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            // Swagger como Página Inicial (Home) na Nuvem
+            // Swagger como página inicialn na nuvem
+
             if (app.Environment.IsProduction())
             {
                 app.UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - V1");
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Blog Pessoal - v1");
                     options.RoutePrefix = string.Empty;
                 });
+
             }
 
-            //Inicializa o CORS
+            // Inicializa o CORS
             app.UseCors("MyPolicy");
 
             app.UseAuthentication();

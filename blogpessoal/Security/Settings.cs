@@ -1,4 +1,7 @@
-﻿namespace blogpessoal.Security
+﻿using Microsoft.AspNetCore.DataProtection;
+
+
+namespace blogpessoal.Security
 {
     public class Settings
     {
